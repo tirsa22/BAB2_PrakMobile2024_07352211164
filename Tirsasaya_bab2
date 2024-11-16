@@ -1,0 +1,126 @@
+import 'dart:core';
+
+// ENUM untuk Fase Proyek
+enum FaseProyek { Perencanaan, Pengembangan, Evaluasi }
+
+// Mixin untuk Kinerja
+mixin Kinerja {
+  int _produktivitas = 0;
+
+  void updateProduktivitas(int nilai) {
+    if (nilai >= 0 && nilai <= 100) {
+      _produktivitas = nilai;
+    } else {
+      print('Produktivitas harus di antara 0 hingga 100.');
+    }
+  }
+
+  int get produktivitas => _produktivitas;
+}
+
+// Kelas Produk
+class Produk {
+  final String namaProduk;
+  double harga;
+  final String kategori;
+  int jumlahTerjual;
+
+  Produk(this.namaProduk, this.harga, this.kategori, this.jumlahTerjual);
+
+  // Metode untuk diskon khusus produk NetworkAutomation
+  void applyDiskon() {
+    if (kategori == 'NetworkAutomation' && jumlahTerjual > 50) {
+      harga *= 0.85;
+      if (harga < 200000) {
+        harga = 200000;
+      }
+    }
+  }
+}
+
+// Kelas Karyawan
+class Karyawan with Kinerja {
+  final String nama;
+  final int umur;
+  final String peran;
+  bool isAktif;
+
+  Karyawan(this.nama, {required this.umur, required this.peran, this.isAktif = true});
+
+  @override
+  String toString() {
+    return 'Nama: $nama, Umur: $umur, Peran: $peran, Produktivitas: $produktivitas, Aktif: $isAktif';
+  }
+}
+
+// Kelas KaryawanTetap dan KaryawanKontrak
+class KaryawanTetap extends Karyawan {
+  KaryawanTetap(String nama, {required int umur, required String peran})
+      : super(nama, umur: umur, peran: peran);
+}
+
+class KaryawanKontrak extends Karyawan {
+  KaryawanKontrak(String nama, {required int umur, required String peran})
+      : super(nama, umur: umur, peran: peran);
+}
+
+// Kelas Proyek
+class Proyek {
+  FaseProyek fase = FaseProyek.Perencanaan;
+  List<Karyawan> tim = [];
+
+  void tambahKaryawan(Karyawan karyawan) {
+    if (tim.length < 20) {
+      tim.add(karyawan);
+      print('Karyawan ${karyawan.nama} ditambahkan ke tim.');
+    } else {
+      print('Jumlah karyawan aktif mencapai batas maksimum (20).');
+    }
+  }
+
+  void karyawanResign(Karyawan karyawan) {
+    karyawan.isAktif = false;
+    print('Karyawan ${karyawan.nama} telah resign.');
+  }
+
+  void lanjutFase() {
+    if (fase == FaseProyek.Perencanaan && tim.where((k) => k.isAktif).length >= 5) {
+      fase = FaseProyek.Pengembangan;
+      print('Fase beralih ke Pengembangan.');
+    } else if (fase == FaseProyek.Pengembangan) {
+      fase = FaseProyek.Evaluasi;
+      print('Fase beralih ke Evaluasi.');
+    } else {
+      print('Tidak memenuhi syarat untuk beralih ke fase berikutnya.');
+    }
+  }
+}
+
+// Fungsi utama
+void main() {
+  // Mengelola Produk
+  var produk1 = Produk('Data Manager', 180000, 'DataManagement', 30);
+  var produk2 = Produk('Network Auto', 250000, 'NetworkAutomation', 60);
+
+  produk2.applyDiskon();
+  print('Harga produk ${produk2.namaProduk} setelah diskon: ${produk2.harga}');
+
+  // Mengelola Karyawan
+  var karyawan1 = KaryawanTetap('siti', umur: 30, peran: 'Developer');
+  var karyawan2 = KaryawanKontrak('bebel', umur: 35, peran: 'NetworkEngineer');
+  var karyawan3 = KaryawanTetap('put', umur: 40, peran: 'Manager');
+
+  karyawan3.updateProduktivitas(90);
+  print(karyawan3);
+
+  // Mengelola Proyek
+  var proyek = Proyek();
+  proyek.tambahKaryawan(karyawan1);
+  proyek.tambahKaryawan(karyawan2);
+  proyek.tambahKaryawan(karyawan3);
+
+  proyek.lanjutFase(); // Beralih ke Pengembangan
+  proyek.karyawanResign(karyawan2);
+
+  proyek.lanjutFase(); // Beralih ke Evaluasi
+}
